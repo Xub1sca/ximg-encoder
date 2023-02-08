@@ -1,0 +1,15 @@
+[package]
+name = "write_data"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+image = "*"
+bitbit = "*"
+
+[profile.release]
+opt-level = 'z'
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"
