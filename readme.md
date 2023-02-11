@@ -5,6 +5,8 @@ XIMG stands for "Xubisca Image".
 
 Makes use of modified code from robn/bitbit-rs - https://github.com/robn/bitbit-rs - licensed under the MIT License as reads the following:
 
+
+
 Copyright (c) 2015 Robert Norris.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +28,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
+
 Also makes use of image-rs - https://github.com/image-rs/image - under the same license
+
+
 
 Copyright (c) 2014 PistonDevelopers
 
