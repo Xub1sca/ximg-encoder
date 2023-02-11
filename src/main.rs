@@ -2,7 +2,7 @@ use image::GenericImageView;
 use std::{fs::File, io::Write};
 
 fn main() {
-    let path: &String = &std::env::args().collect::<Vec<String>>()[1];
+    let path: &String = &std::env::args().nth(1).unwrap();
     let image = image::open(path).unwrap();
     let mut data: (Vec<String>, Vec<u8>, Vec<String>) = (vec![], vec![], vec![]);
 
@@ -29,12 +29,8 @@ fn main() {
         }
     }
 
-    data
-        .2
-        .push(format!("{:0>16}", &image.dimensions().0));
-    data
-        .2
-        .push(format!("{:0>16}", &image.dimensions().1));
+    data.2.push(format!("{:0>16}", &image.dimensions().0));
+    data.2.push(format!("{:0>16}", &image.dimensions().1));
 
     for i in 0..data.0.len() {
         let mut color_reference = (data.0[i]).to_string();
@@ -44,9 +40,7 @@ fn main() {
         } else {
             color_reference.push('1');
             data.2.push(color_reference);
-            data
-                .2
-                .push(format!("{:0>8}", data.1[i]));
+            data.2.push(format!("{:0>8}", data.1[i]));
         }
     }
 
@@ -60,8 +54,12 @@ fn main() {
             if bit == '1' {
                 byte[0] |= 0x1;
             }
-            if { shift += 1; shift } == 8 {
-                file.write(&byte).unwrap();
+            if {
+                shift += 1;
+                shift
+            } == 8
+            {
+                file.write_all(&byte).unwrap();
                 byte[0] = 0;
                 shift = 0;
             }
