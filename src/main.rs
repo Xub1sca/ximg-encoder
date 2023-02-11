@@ -1,45 +1,70 @@
-use std::fs::File;
 use image::GenericImageView;
-use bitbit::BitWriter;
+use std::{fs::File, io::Write};
 
 fn main() {
-    let input_file:&String = &std::env::args().collect::<Vec<String>>()[1];
-    let input_image = image::open(input_file).unwrap();
-    let mut bitwriter = BitWriter::new(File::create(input_file.replace("png", "ximg")).unwrap());
-    let mut pixel_data:(Vec<String>, Vec<u8>) = (vec![], vec![]);
+    let path: &String = &std::env::args().collect::<Vec<String>>()[1];
+    let image = image::open(path).unwrap();
+    let mut data: (Vec<String>, Vec<u8>, Vec<String>) = (vec![], vec![], vec![]);
 
-    for pixel in input_image.pixels() {
-        let mut result:String = if pixel.2[3] > 127 { "".to_string() } else { "000001111111111".to_string() };
-        if result != "000001111111111".to_string() {
-            for i in 0..3 as usize {
+    for pixel in image.pixels() {
+        let mut result: String = if pixel.2[3] > 127 {
+            "".to_string()
+        } else {
+            "000001111111111".to_string()
+        };
+        if result != *"000001111111111".to_string() {
+            for i in 0..3_usize {
                 result.push_str(format!("{:0>5}", pixel.2[i] >> 3).as_str());
             }
         }
-        if pixel_data.0.len() > 0 && result == pixel_data.0[pixel_data.0.len() - 1] && pixel_data.1[pixel_data.1.len() - 1] != u8::MAX {
-            let last_color_entry = &pixel_data.1.len() - 1;
-            pixel_data.1[last_color_entry] += 1;
+        if !data.0.is_empty()
+            && result == data.0[data.0.len() - 1]
+            && data.1[data.1.len() - 1] != u8::MAX
+        {
+            let last_color_entry = &data.1.len() - 1;
+            data.1[last_color_entry] += 1;
         } else {
-            pixel_data.0.push((&result).to_string());
-            pixel_data.1.push(0);
+            data.0.push((result).to_string());
+            data.1.push(0);
         }
     }
 
-    write_data(&mut bitwriter, vec![&format!("{:0>16}", &input_image.dimensions().0), &format!("{:0>16}", &input_image.dimensions().1)]);
+    data
+        .2
+        .push(format!("{:0>16}", &image.dimensions().0));
+    data
+        .2
+        .push(format!("{:0>16}", &image.dimensions().1));
 
-    for i in 0..pixel_data.0.len() {
-        let mut color_reference = (&pixel_data.0[i]).to_string();
-        if pixel_data.1[i] == 0 {
+    for i in 0..data.0.len() {
+        let mut color_reference = (data.0[i]).to_string();
+        if data.1[i] == 0 {
             color_reference.push('0');
-            write_data(&mut bitwriter, vec![&color_reference]);
+            data.2.push(color_reference);
         } else {
             color_reference.push('1');
-            write_data(&mut bitwriter, vec![&color_reference, &format!("{:0>8}", &pixel_data.1[i])]);
+            data.2.push(color_reference);
+            data
+                .2
+                .push(format!("{:0>8}", data.1[i]));
         }
     }
-}
 
-fn write_data(bitwriter:&mut BitWriter<File>, data:Vec<&String>) {
-    for entry in data {
-        for bit in entry.chars() { bitwriter.write_bit(bit == '1').unwrap(); }
+    let mut file = File::create(path.replace("png", "ximg")).unwrap();
+    let mut byte: [u8; 1] = [0];
+    let mut shift = 0;
+
+    for entry in data.2 {
+        for bit in entry.chars() {
+            byte[0] <<= 1;
+            if bit == '1' {
+                byte[0] |= 0x1;
+            }
+            if { shift += 1; shift } == 8 {
+                file.write(&byte).unwrap();
+                byte[0] = 0;
+                shift = 0;
+            }
+        }
     }
 }

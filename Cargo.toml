@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 image = "*"
-bitbit = "*"
 
 [profile.release]
 opt-level = 'z'
